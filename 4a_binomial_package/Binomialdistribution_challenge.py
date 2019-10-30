@@ -1,6 +1,7 @@
 # TODO: import necessary libraries
 
 # TODO: make a Binomial class that inherits from the Distribution class. Use the specifications below.
+class Binomial(Distribution):
     """ Binomial distribution class for calculating and 
     visualizing a Binomial distribution.
     
