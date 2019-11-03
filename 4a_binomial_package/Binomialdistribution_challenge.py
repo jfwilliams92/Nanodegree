@@ -2,6 +2,8 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from scipy.special import factorial  # array factorial
+
 from distributions.Generaldistribution import Distribution
 
 
@@ -131,30 +133,62 @@ class Binomial(Distribution):
 
         return p_of_k
 
+    def pdf_ufunc(self, k_values):
+        """Vectorized probability density function calculator for binomial distribution.
+
+        Args:
+            k_values (array): array-like sequence of k values to calculate pdf for 
+
+        Returns:
+            array: array-like sequence of pdf values for given k_values
+        """
+
+        # uses scipy.special.factorial for vectorized factorial, approximated by gamma fxn
+        k_values = np.array(k_values)
+        n_factorial = math.factorial(self.n)
+        n_minus_k_factorial = factorial(self.n - k_values)
+        k_factorial = factorial(k_values)
+
+        p_of_kvalues = n_factorial / (n_minus_k_factorial * k_factorial) * np.power(self.p, k_values) * np.power((1 - self.p), (self.n - k_values))
+
+        return p_of_kvalues
+
     # write a method to plot the probability density function of the binomial distribution
-    def plot_pdf(self):
+    def plot_pdf(self, start=None, end=None, range_color='r', **kwargs):
         """Function to plot the pdf of the binomial distribution
         
         Args:
-            None
+            Optional start (int): The value to start calculating pdf at. Default 0.
+            Optional end (int): The value to stop calculating pdf at. Default n.
+            Optional matplotlib plotting kwargs.
         
         Returns:
             list: x values for the pdf plot
             list: y values for the pdf plot
+            float: probability between start and stop
             
         """
-        pass
 
-        # TODO: Use a bar chart to plot the probability density function from
-        # k = 0 to k = n
+        x_values = list(range(0, self.n + 1))
+        y_values = self.pdf_ufunc(x_values)
+        probability = y_values.sum()
         
-        #   Hint: You'll need to use the pdf() method defined above to calculate the
-        #   density function for every value of k.
+        fig,ax = plt.subplots()
+        barlist = ax.bar(x_values, y_values, **kwargs)
         
-        #   Be sure to label the bar chart with a title, x label and y label
+        if start or end:
+            start = 0 if not start else start
+            end = self.n if not end else end
+            for bar in barlist[start:end + 1]:
+                bar.set_color(range_color)
+            probability = y_values[start:end + 1].sum()
 
-        #   This method should also return the x and y values used to make the chart
-        #   The x and y values should be stored in separate lists
+        ax.set_xlabel('Num Successes')
+        ax.set_ylabel('Probability')
+
+        ax.set_title('Probability Density of k Successes in Binomial Distribution')
+
+        return x_values, list(y_values), probability
                 
     # write a method to output the sum of two binomial distributions. Assume both distributions have the same p value.
     def __add__(self, other):
@@ -205,3 +239,7 @@ class Binomial(Distribution):
         #       The method should return a string in the expected format
     
         pass
+
+
+b = Binomial()
+b.replace_stats_with_data("/home/james/PYTHON/PythonProjects/DataScience NanoDegree/Nanodegree_distributions/4a_binomial_package/numbers_binomial.txt")
