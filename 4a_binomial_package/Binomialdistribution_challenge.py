@@ -1,13 +1,10 @@
-# TODO: import necessary libraries
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from scipy.special import factorial  # array factorial
+from scipy.special import factorial  # for array factorial calculation
 
 from distributions.Generaldistribution import Distribution
 
-
-# TODO: make a Binomial class that inherits from the Distribution class. Use the specifications below.
 class Binomial(Distribution):
     """ Binomial distribution class for calculating and 
     visualizing a Binomial distribution.
@@ -96,7 +93,13 @@ class Binomial(Distribution):
         Returns:
             None
         """
-        fig, ax = plt.subplots()
+
+        try:
+            assert len(self.data) > 0, 'empirical data is not populated from file'
+        except AssertionError:
+            raise
+
+        _, ax = plt.subplots()
         successes = self.data.count(1)
         failures = self.data.count(0)
         y_label = 'Count'
@@ -153,13 +156,13 @@ class Binomial(Distribution):
 
         return p_of_kvalues
 
-    # write a method to plot the probability density function of the binomial distribution
     def plot_pdf(self, start=None, end=None, range_color='r', **kwargs):
         """Function to plot the pdf of the binomial distribution
         
         Args:
             Optional start (int): The value to start calculating pdf at. Default 0.
             Optional end (int): The value to stop calculating pdf at. Default n.
+            Optional range_color (string): Valid matplotlib color string for highlighting pdf range
             Optional matplotlib plotting kwargs.
         
         Returns:
@@ -173,9 +176,10 @@ class Binomial(Distribution):
         y_values = self.pdf_ufunc(x_values)
         probability = y_values.sum()
         
-        fig,ax = plt.subplots()
+        _, ax = plt.subplots()
         barlist = ax.bar(x_values, y_values, **kwargs)
         
+        # if endpoint or startpoint is given, highlight the range and calculate the probability within the range
         if start or end:
             start = 0 if not start else start
             end = self.n if not end else end
@@ -190,7 +194,6 @@ class Binomial(Distribution):
 
         return x_values, list(y_values), probability
                 
-    # write a method to output the sum of two binomial distributions. Assume both distributions have the same p value.
     def __add__(self, other):
         
         """Function to add together two Binomial distributions with equal p
@@ -207,17 +210,8 @@ class Binomial(Distribution):
             assert self.p == other.p, 'p values are not equal'
         except AssertionError as error:
             raise
-        
-        # TODO: Define addition for two binomial distributions. Assume that the
-        # p values of the two distributions are the same. The formula for 
-        # summing two binomial distributions with different p values is more complicated,
-        # so you are only expected to implement the case for two distributions with equal p.
-        
-        # the try, except statement above will raise an exception if the p values are not equal
-        
-        # Hint: When adding two binomial distributions, the p value remains the same
-        #   The new n value is the sum of the n values of the two distributions.
-        pass
+
+        return Binomial(self.p, self.n + other.n)
                         
     # use the __repr__ magic method to output the characteristics of the binomial distribution object.
     def __repr__(self):
@@ -231,15 +225,9 @@ class Binomial(Distribution):
             string: characteristics of the Binomial object
         
         """
-        
-        # TODO: Define the representation method so that the output looks like
-        #       mean 5, standard deviation 4.5, p .8, n 20
-        #
-        #       with the values replaced by whatever the actual distributions values are
-        #       The method should return a string in the expected format
-    
-        pass
+        mean = self.calculate_mean()
+        stdev = self.calculate_stdev()
+        n = self.n
+        p = self.p
 
-
-b = Binomial()
-b.replace_stats_with_data("/home/james/PYTHON/PythonProjects/DataScience NanoDegree/Nanodegree_distributions/4a_binomial_package/numbers_binomial.txt")
+        return f"mean {mean}, stdev {stdev}, p {p}, n {n}"
